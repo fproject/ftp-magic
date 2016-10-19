@@ -15,6 +15,7 @@
 			
 			import pl.maliboo.ftp.FTPFile;
 			import pl.maliboo.ftp.core.FTPClient;
+			import pl.maliboo.ftp.events.FTPEvent;
 			
 			private function get client():FTPClient
 			{
@@ -31,6 +32,9 @@
 			protected function creationCompleteHandler(event:FlexEvent):void
 			{
 				clientApp.logOutput = output;
+				client.addEventListener(FTPEvent.LISTING,function(e:FTPEvent):void{
+					removeElement(output);
+				});
 				this.addElement(output);
 				this.callLater(clientApp.connect);
 			}

@@ -5,14 +5,14 @@ package pl.maliboo.ftp.invokers
 	import flash.net.Socket;
 	
 	import pl.maliboo.ftp.Commands;
-	import pl.maliboo.ftp.core.FTPClient;
 	import pl.maliboo.ftp.FTPCommand;
 	import pl.maliboo.ftp.FTPFile;
-	import pl.maliboo.ftp.core.FTPInvoker;
 	import pl.maliboo.ftp.Responses;
+	import pl.maliboo.ftp.core.FTPClient;
+	import pl.maliboo.ftp.core.FTPInvoker;
+	import pl.maliboo.ftp.errors.InvokeError;
 	import pl.maliboo.ftp.events.FTPEvent;
 	import pl.maliboo.ftp.utils.PassiveSocketInfo;
-	import pl.maliboo.ftp.errors.InvokeError;
 
 	public class ListInv extends FTPInvoker
 	{
@@ -46,9 +46,8 @@ package pl.maliboo.ftp.invokers
 					sendCommand(new FTPCommand(Commands.LIST, directory));
 					break;
 				case Responses.DATA_CONN_CLOSE:
-					var listEvt:FTPEvent = new FTPEvent(FTPEvent.LISTING);
-					listEvt.listing = FTPFile.parseFormListing(listing, client.workingDirectory);
-					release(listEvt);
+					if(!passiveListing)
+						raiseListing();
 					break;
 				case Responses.FILE_STATUS_OK:
 					break;
@@ -57,18 +56,31 @@ package pl.maliboo.ftp.invokers
 			}
 		}
 		
+		private function raiseListing():void
+		{
+			var listEvt:FTPEvent = new FTPEvent(FTPEvent.LISTING);
+			listEvt.listing = FTPFile.parseFormListing(listing, client.workingDirectory);
+			release(listEvt);
+			passiveListing = false;
+		}
+		
 		override protected function cleanUp ():void
 		{
 		}
 		
+		private var passiveListing:Boolean;
+		
 		private function handlePassiveConnect (evt:Event):void
 		{
+			passiveListing = true;
 			sendCommand(new FTPCommand(Commands.LIST, directory));
 		}
 		
 		private function handleListing (evt:ProgressEvent):void
 		{
 			listing += passiveSocket.readUTFBytes(passiveSocket.bytesAvailable);
+			if(passiveListing)
+				raiseListing();
 		}
 	}
 }
