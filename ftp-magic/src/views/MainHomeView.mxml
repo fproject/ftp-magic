@@ -8,7 +8,6 @@
 		<![CDATA[
 			import flash.filesystem.File;
 			
-			import mx.collections.ArrayList;
 			import mx.core.IDataRenderer;
 			import mx.events.FlexEvent;
 			
@@ -16,63 +15,24 @@
 			
 			import pl.maliboo.ftp.FTPFile;
 			import pl.maliboo.ftp.core.FTPClient;
-			import pl.maliboo.ftp.events.FTPEvent;
-			import pl.maliboo.ftp.utils.ConsoleListener;
-			
-			private var list:ConsoleListener;
 			
 			private function get client():FTPClient
 			{
 				return clientApp.client;
 			}
 			
+			[Bindable("none")]
 			private function get clientApp():FTPClientApp
 			{
 				return FTPClientApp.instance;
 			}
 			
-			private function initClientHandlers():void
-			{
-				client.addEventListener(FTPEvent.CONNECTED, handleConnected);
-				client.addEventListener(FTPEvent.LOGGED, handleLogged);
-				client.addEventListener(FTPEvent.LISTING, handleListing);
-				client.addEventListener(FTPEvent.CHANGE_DIR, handleCD);
-			}
-			
 			
 			protected function creationCompleteHandler(event:FlexEvent):void
 			{
-				initClientHandlers();
-				makeConnection();
-			}
-			
-			public function makeConnection ():void
-			{
-				if (list == null)
-					list = new ConsoleListener(client, output);
+				clientApp.logOutput = output;
 				this.addElement(output);
-				this.callLater(client.connect,[clientApp.site.host, clientApp.site.port]);
-			}
-			
-			public function handleConnected (evt:FTPEvent):void
-			{
-				client.login(clientApp.loginUser.name, clientApp.loginUser.password);
-			}
-			
-			public function handleLogged (evt:FTPEvent):void
-			{
-				client.list();
-			}
-			
-			public function handleCD (evt:FTPEvent):void
-			{
-				client.list();
-			}
-			
-			public function handleListing(evt:FTPEvent):void
-			{
-				fileList.dataProvider = new ArrayList(evt.listing);
-				this.removeElement(output);
+				this.callLater(clientApp.connect);
 			}
 			
 			/*
@@ -106,8 +66,9 @@
 		]]>
 	</fx:Script>
 	<fx:Declarations>
-		<s:TextArea id="output" top="0" bottom="0" left="0" right="0"/>
+		<s:TextArea id="output" top="0" bottom="0" left="0" right="0" editable="false"/>
 	</fx:Declarations>
-	<s:List id="fileList" top="0" bottom="0" left="0" right="0"/>
+	<s:List id="fileList" top="0" bottom="0" left="0" right="0"
+			dataProvider="{clientApp.fileCollection}"/>
 	
 </s:View>

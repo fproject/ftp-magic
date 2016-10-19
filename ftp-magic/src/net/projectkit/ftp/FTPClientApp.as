@@ -2,8 +2,11 @@ package net.projectkit.ftp
 {
 	import mx.collections.ArrayCollection;
 	
+	import spark.components.TextArea;
+	
 	import pl.maliboo.ftp.core.FTPClient;
 	import pl.maliboo.ftp.events.FTPEvent;
+	import pl.maliboo.ftp.utils.ConsoleListener;
 
 	public class FTPClientApp
 	{
@@ -17,6 +20,7 @@ package net.projectkit.ftp
 		{
 			if(se == null)
 				throw new Error("Singleton Error");
+			initClientHandlers();
 		}
 		
 		/**
@@ -92,6 +96,25 @@ package net.projectkit.ftp
 		public function connect():void
 		{
 			client.connect(site.host, site.port);
+		}
+		
+		private var consoleListener:ConsoleListener;
+		
+		public function get logOutput():TextArea
+		{
+			return consoleListener ? consoleListener.textArea : null;
+		}
+			
+		public function set logOutput(value:TextArea):void
+		{
+			if(value != null)
+			{
+				if (consoleListener == null)
+				{
+					consoleListener = new ConsoleListener(client, value);
+				}
+				consoleListener.textArea = value;
+			}			
 		}
 	}
 }

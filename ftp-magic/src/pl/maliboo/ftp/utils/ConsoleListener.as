@@ -9,8 +9,8 @@ package pl.maliboo.ftp.utils
 
 	public class ConsoleListener extends FTPListener
 	{
-		private var textArea:TextArea;
-		private var input:TextInput;
+		public var textArea:TextArea;
+		public var input:TextInput;
 		public function ConsoleListener(client:FTPClient, output:TextArea, input:TextInput=null)
 		{
 			super(client);
